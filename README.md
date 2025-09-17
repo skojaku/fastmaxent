@@ -3,31 +3,31 @@ This repo features code for Fast unbiased sampling of networks with given expect
 
 ## Installation
 
-To run the code in this repository, you'll need Python 3.9 and a few other scientific computing libraries.
+To use the `fastmaxent` package, you'll need Python 3.9 or higher.
 
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git
-    cd your-repo-name
+    cd fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths
     ```
-2.  **Install dependencies:**
-    The code relies on `numpy` and `numba`. You can install them using pip:
+2.  **Install the package:**
+    This will install the `fastmaxent` module and all its dependencies (`numpy`, `numba`, `nemtropy`).
     ```bash
-    pip install numpy numba
+    pip install .
     ```
 
 ## Citation
-If you find this code useful and use it in your research, please cite our paper as following:
+If you find this code useful for your research, please cite our paper:
+
 ```bibtex
-@article{placeholder_2024,
+@article{Li2025Fast,
   title={Fast unbiased sampling of networks with given expected degrees and strengths},
   author={Xuanchi Li and Xin Wang and Sadamori Kojaku},
   year={2025}
 }
-
 ```
 ## Dependencies
-*  - python=3.9
+  - python=3.9
   - snakemake=7.32.4
   - numpy=1.24.4
   - numba=0.57.1
