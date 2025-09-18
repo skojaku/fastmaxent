@@ -28,13 +28,13 @@ Our algorithm adapts the **Miller-Hagberg algorithm** to MaxEnt models by using 
 
 #### From GitHub (Recommended)
 ```bash
-pip install git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git
+pip install git+https://github.com/EKUL-Skywalker/fastmaxent.git
 ```
 
 #### With Inference Dependencies
 If you need parameter fitting capabilities (NEMtropy integration):
 ```bash
-pip install git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git[inference]
+pip install git+https://github.com/EKUL-Skywalker/fastmaxent.git[inference]
 ```
 
 ### Using uv (Faster Alternative)
@@ -43,12 +43,12 @@ pip install git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_netw
 
 #### From GitHub
 ```bash
-uv add git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git
+uv add git+https://github.com/EKUL-Skywalker/fastmaxent.git
 ```
 
 #### With Inference Dependencies
 ```bash
-uv add git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git[inference]
+uv add git+https://github.com/EKUL-Skywalker/fastmaxent.git[inference]
 ```
 
 ## Quick Start
@@ -174,7 +174,7 @@ The CLI automatically:
 
 **Note:** The CLI requires NEMtropy for parameter inference. Install with:
 ```bash
-pip install git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git[inference]
+pip install git+https://github.com/EKUL-Skywalker/fastmaxent.git[inference]
 ```
 
 ## Examples
