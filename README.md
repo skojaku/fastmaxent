@@ -3,15 +3,24 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-FastMaxEnt provides efficient algorithms for sampling networks from maximum entropy models with given expected degree and strength sequences. This package implements fast rejection sampling algorithms for both unweighted (UBCM) and weighted (UECM) configuration models.
-
-## What is FastMaxEnt?
-
 FastMaxEnt implements fast and unbiased algorithms for generating network samples that:
-- Preserve expected network properties
-- Are statistically unbiased
-- Scale efficiently
-- Handle both weighted and unweighted networks
+- preserve the degree and strength sequences on expectation
+- are statistically unbiased (the maximum entropy models)
+- scale efficiently (effectively linear in time with respect to the number of edges)
+- handle both weighted and unweighted networks
+
+## How it works?
+
+![](./demo.gif)
+
+The **maximum entropy principle** provides a theoretically rigorous framework for generating unbiased random networks with prescribed degree and strength sequences.
+It remedies the widely-used **Chung-Lu model** that samples edges between large-degree nodes more frequently than it should (see [this](https://iopscience.iop.org/article/10.1088/1367-2630/17/2/023052), [this](https://iopscience.iop.org/article/10.1088/1367-2630/16/4/043022), [this](https://arxiv.org/abs/1710.02733), and [this](https://www.sciencedirect.com/science/article/abs/pii/S0378437103008409)).
+Despite its theoretical correctness, the maximum entropy model is not widely used in practice, leaving the Chung-Lu model as still only a viable choice.
+
+We address this problem by proposing a fast sampling algorithm that works with the maximum entropy model. Our algorithm is an adaptation of the [Miller-Hagberg algorithm](https://link.springer.com/chapter/10.1007/978-3-642-21286-4_10) to the maximum entropy model. It is in the same spirit as the [Miller-Hagberg algorithm adapted for combinatorial Chung-Lu model](https://arxiv.org/abs/1710.02733), but we adapt it for the maximum entropy model.
+
+Our algorithm adapts the **Miller-Hagberg algorithm** to MaxEnt models by using a two-stage approach: first sampling candidate edges, then selecting which ones to keep. By examining only candidate edges rather than all possible node pairs, we avoid the computational bottleneck and achieve 10-1000x speedup while maintaining statistical correctness. See [our paper](https://arxiv.org/abs/2509.13230) for technical details.
+
 
 ## Installation
 
@@ -44,83 +53,48 @@ uv add git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_
 
 ## Quick Start
 
-### Unweighted Networks (UBCM)
-```python
-import numpy as np
-from fastmaxent import sampling
-
-# Define fitness parameters (alpha = -log(theta))
-alpha = np.array([1.5, 2.0, 1.0, 2.5])
-
-# Sample unweighted networks
-networks = sampling(alpha, weighted=False, n_samples=3)
-
-# Each network is a list of edges [source, target]
-print(f"First network: {networks[0]}")
-```
-
-### Weighted Networks (UECM)
-```python
-import numpy as np
-from fastmaxent import sampling
-
-# Define degree and strength parameters
-alpha = np.array([1.5, 2.0, 1.0, 2.5])  # degree constraints
-beta = np.array([0.5, 1.0, 0.8, 1.2])   # strength constraints
-
-# Sample weighted networks
-networks = sampling(alpha, beta=beta, weighted=True, n_samples=2)
-
-# Each network is a list of edges [source, target, weight]
-print(f"First weighted network: {networks[0]}")
-```
-
-## Usage with NEMtropy
-
-FastMaxEnt is designed to work seamlessly with [NEMtropy](https://github.com/nicoloval/NEMtropy) for parameter fitting:
+Fastmaxent generates networks based on the maximum entropy models.
+We first find the parameters using [NEMtropy](https://github.com/nicoloval/NEMtropy).
 
 ### Unweighted Example
 ```python
 import numpy as np
-import pandas as pd
 from NEMtropy import UndirectedGraph
-from NEMtropy import network_functions
 from fastmaxent import sampling
 
 # Load your network data
-df = pd.read_csv("your_network.csv").values
-adjacency_matrix = network_functions.build_adjacency_from_edgelist(
-    df, is_directed=False, is_weighted=False, is_sparse=False
-)
-
+edges = np.array([[0, 1], [0, 2], [1, 2]])
 # Fit UBCM parameters using NEMtropy
-graph = UndirectedGraph(adjacency_matrix)
-graph.solve_tool(model="cm", method="quasinewton", initial_guess="random", tol=1e-08)
+graph = UndirectedGraph(edgelist=edges)
+graph.solve_tool(model="cm", method="quasinewton", initial_guess="random")
 
 # Extract parameters for FastMaxEnt
 alphas = -np.log(graph.x)
 
 # Sample networks preserving degree sequence
-networks = sampling(alphas, weighted=False, n_samples=100)
+edge_list = sampling(alphas, weighted=False, n_samples=100)
 ```
 
 ### Weighted Example
 ```python
 import numpy as np
-import pandas as pd
-from NEMtropy import UndirectedGraph
-from NEMtropy import network_functions
+from NEMtropy import UndirectedGraph, network_functions
 from fastmaxent import sampling
 
-# Load weighted network data
-df = pd.read_csv("your_weighted_network.csv").values
-adjacency_matrix = network_functions.build_adjacency_from_edgelist(
-    df, is_directed=False, is_weighted=True, is_sparse=False
-)
+import numpy as np
+from NEMtropy import UndirectedGraph
+from fastmaxent import sampling
 
-# Fit UECM parameters using NEMtropy
-graph = UndirectedGraph(adjacency_matrix)
-graph.solve_tool(model="ecm", method="quasinewton", initial_guess="random", tol=1e-08)
+# Load your network data
+# The third column is the weight
+edges = np.array([[0, 1, 1], [0, 2, 3], [1, 2, 2]])
+# Fit UBCM parameters using NEMtropy
+graph = UndirectedGraph(edgelist=edges)
+graph.solve_tool(model="ecm", method="quasinewton", initial_guess="random")
+
+# Extract parameters for FastMaxEnt
+alphas = -np.log(graph.x)
+betas = -np.log(graph.y)
 
 # Extract parameters for FastMaxEnt
 alphas = -np.log(graph.x)
@@ -145,6 +119,64 @@ Generate network samples from UBCM or UECM models.
 **Returns:**
 - `list`: List of network edge lists. For unweighted: `[source, target]`. For weighted: `[source, target, weight]`
 
+## Command Line Interface
+
+FastMaxEnt provides a CLI tool for parameter inference and network generation from edge tables.
+
+### Usage
+
+```bash
+python -m fastmaxent.cli input.csv output_dir [options]
+```
+
+### Arguments
+
+- `input.csv` - Path to CSV file containing edge table (required)
+- `output_dir` - Directory to save generated network samples (required)
+
+### Options
+
+- `--n-samples N` - Number of random networks to generate (default: 10)
+- `--weighted` - Treat network as weighted (use UECM model)
+- `--delimiter CHAR` - CSV delimiter character (default: comma)
+
+### Examples
+
+#### Unweighted Network Sampling
+```bash
+# Generate 5 unweighted networks from edge table
+python -m fastmaxent.cli network.csv output/ --n-samples 5
+
+# Input CSV format (unweighted):
+# source,target
+# 0,1
+# 0,2
+# 1,2
+```
+
+#### Weighted Network Sampling
+```bash
+# Generate 10 weighted networks from weighted edge table
+python -m fastmaxent.cli weighted_network.csv output/ --n-samples 10 --weighted
+
+# Input CSV format (weighted):
+# source,target,weight
+# 0,1,2.5
+# 0,2,1.0
+# 1,2,3.2
+```
+
+The CLI automatically:
+1. Loads the edge table from CSV
+2. Infers UBCM/UECM parameters using NEMtropy
+3. Generates random network samples using FastMaxEnt
+4. Saves each sample as `network_sample_001.csv`, `network_sample_002.csv`, etc.
+
+**Note:** The CLI requires NEMtropy for parameter inference. Install with:
+```bash
+pip install git+https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths.git[inference]
+```
+
 ## Examples
 
 Complete working examples are provided in the `examples/` directory:
@@ -155,23 +187,8 @@ Complete working examples are provided in the `examples/` directory:
   - Includes degree and strength preservation verification
   - Visualization of results
 
-- [`examples/demo_ubcm.py`](examples/demo_ubcm.py) - Unweighted network sampling script
-- [`examples/demo_uecm.py`](examples/demo_uecm.py) - Weighted network sampling script
-
-### Running Examples
-
-#### Python Scripts:
-```bash
-cd examples
-python demo_ubcm.py   # Unweighted network demo
-python demo_uecm.py   # Weighted network demo
-```
-
-#### Jupyter Notebook:
-```bash
-cd examples
-jupyter notebook example.ipynb   # Interactive tutorial
-```
+#### Example jupyter notebook:
+- `examples/example.ipynb` - Interactive tutorial
 
 ## Citation
 

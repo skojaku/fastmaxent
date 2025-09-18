@@ -1,0 +1,56 @@
+[project]
+name = "fastmaxent"
+version = "0.1.0"
+description = "Fast unbiased sampling of networks with given expected degrees and strengths."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "Xuanchi Li"},
+    {name = "Xin Wang"},
+    {name = "Sadamori Kojaku"},
+]
+license = {file = "LICENSE"}
+keywords = ["network sampling", "configuration model", "maximum entropy", "graph theory"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "numba>=0.56.0",
+]
+
+[project.optional-dependencies]
+inference = [
+    "nemtropy>=3.0.0",
+    "pandas>=1.3.0",
+]
+dev = [
+    "pytest",
+    "black",
+    "flake8",
+]
+
+[project.urls]
+Homepage = "https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths"
+Repository = "https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["fastmaxent*"]
+
+[tool.setuptools.package-dir]
+"" = "src"

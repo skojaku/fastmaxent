@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "fastmaxent-cli=fastmaxent_cli:main",
+            "fastmaxent-cli=fastmaxent.cli:main",
         ],
     },
     python_requires=">=3.9",
