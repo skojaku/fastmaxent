@@ -41,8 +41,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths"
-Repository = "https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths"
+Homepage = "https://github.com/EKUL-Skywalker/fastmaxent"
+Repository = "https://github.com/EKUL-Skywalker/fastmaxent"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
