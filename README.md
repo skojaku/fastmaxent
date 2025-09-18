@@ -15,9 +15,9 @@ FastMaxEnt implements fast and unbiased algorithms for generating network sample
 
 The **maximum entropy principle** provides a theoretically rigorous framework for generating unbiased random networks with prescribed degree and strength sequences.
 It remedies the widely-used **Chung-Lu model** that samples edges between large-degree nodes more frequently than it should (see [this](https://iopscience.iop.org/article/10.1088/1367-2630/17/2/023052), [this](https://iopscience.iop.org/article/10.1088/1367-2630/16/4/043022), [this](https://arxiv.org/abs/1710.02733), and [this](https://www.sciencedirect.com/science/article/abs/pii/S0378437103008409)).
-Despite its theoretical correctness, the maximum entropy model is not widely used in practice, leaving the Chung-Lu model as still only a viable choice.
+Despite its theoretical correctness, the maximum entropy model is not widely used in practice, in part due to its high computational complexity for sampling, leaving the Chung-Lu model as still only a viable choice.
 
-We address this problem by proposing a fast sampling algorithm that works with the maximum entropy model. Our algorithm is an adaptation of the [Miller-Hagberg algorithm](https://link.springer.com/chapter/10.1007/978-3-642-21286-4_10) for the Chung-Lu model to the maximum entropy model.
+We address this problem by proposing a fast sampling algorithm that works with the maximum entropy model. Our algorithm is an adaptation of the [Miller-Hagberg algorithm](https://link.springer.com/chapter/10.1007/978-3-642-21286-4_10) for the Chung-Lu model to the maximum entropy model. 
 
 Our algorithm adapts the **Miller-Hagberg algorithm** to MaxEnt models by using a two-stage approach: first sampling candidate edges, then selecting which ones to keep. By examining only candidate edges rather than all possible node pairs, we avoid the computational bottleneck and achieve 10-1000x speedup while maintaining statistical correctness. See [our paper](https://arxiv.org/abs/2509.13230) for technical details.
 
