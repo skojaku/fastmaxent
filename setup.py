@@ -10,7 +10,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Xuanchi Li, Xin Wang, Sadamori Kojaku",
-    url="https://github.com/EKUL-Skywalker/fast_unbiased_sampling_of_networks_with_given_expected_degrees_and_strengths",
+    url="https://github.com/EKUL-Skywalker/fastmaxent",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     install_requires=[
