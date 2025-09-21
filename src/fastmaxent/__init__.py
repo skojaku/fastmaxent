@@ -15,10 +15,8 @@ optimization with Numba acceleration.
 from .fastmaxent import sampling
 from .inference import (
     calc_grad,
-    calc_grad_fast,
-    estimate_parameters, 
-    validate_parameters,
-    initialize_parameters
+    estimate_parameters,
+    initialize_parameters,
 )
 from .optimizer import AdamOptimizer, clip_grad_norm, schedule_lr
 
@@ -28,11 +26,9 @@ __author__ = "Xuanchi Li, Xin Wang, Sadamori Kojaku"
 __all__ = [
     "sampling",
     "calc_grad",
-    "calc_grad_fast", 
     "estimate_parameters",
-    "validate_parameters", 
     "initialize_parameters",
     "AdamOptimizer",
     "clip_grad_norm",
-    "schedule_lr"
+    "schedule_lr",
 ]

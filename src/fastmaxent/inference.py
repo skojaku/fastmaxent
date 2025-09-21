@@ -16,7 +16,7 @@ from . import sampling
 from .optimizer import AdamOptimizer, clip_grad_norm
 
 
-def calc_grad(alpha, deg, n_samples=30):
+def calc_grad(alpha, deg, ns, n_samples=30):
     """
     Fast computation of gradients using optimized batch degree sampling.
 
@@ -30,6 +30,8 @@ def calc_grad(alpha, deg, n_samples=30):
         Current parameter estimates.
     deg : numpy.ndarray
         Observed degree sequence.
+    ns : numpy.ndarray
+        Number of nodes with each degree.
     n_samples : int, default=30
         Number of Monte Carlo samples.
 
@@ -42,13 +44,13 @@ def calc_grad(alpha, deg, n_samples=30):
     n_nodes = len(alpha)
 
     edges = sampling(alpha=alpha, n_samples=n_samples, weighted=False, flatten=True)
+    edges = np.array(edges)[:, :2]
+    deg_exp = np.bincount(
+        edges[:, 0], weights=ns[edges[:, 1]], minlength=n_nodes
+    ) + np.bincount(edges[:, 1], weights=ns[edges[:, 0]], minlength=n_nodes)
+    deg_exp = deg_exp / n_samples
 
-    expected_deg = (
-        np.bincount(np.array(edges)[:2].reshape(-1), minlength=n_nodes) / n_samples
-    )
-
-    grad = deg - expected_deg
-    grad /= np.maximum(deg, 1)
+    grad = deg - deg_exp
     return grad
 
 
@@ -202,8 +204,11 @@ def estimate_parameters(
         - 'converged': whether optimization converged
         - 'n_iter': number of iterations performed
     """
+
+    udeg, ids, ns = np.unique(deg, return_counts=True, return_inverse=True)
+
     # Initialize parameters
-    alpha = initialize_parameters(deg, method=init_method)
+    alpha = initialize_parameters(udeg, method=init_method)
 
     # Initialize optimizer
     optimizer = AdamOptimizer(lr=lr, beta1=0.9, beta2=0.999)
@@ -216,7 +221,7 @@ def estimate_parameters(
         print(f"Starting parameter estimation with {n_iter} max iterations...")
 
     for iteration in range(n_iter):
-        grad = calc_grad(alpha, deg, n_samples=n_samples)
+        grad = calc_grad(alpha, udeg, ns, n_samples=n_samples)
 
         # Apply gradient clipping if specified
         if grad_clip is not None:
@@ -238,7 +243,7 @@ def estimate_parameters(
 
         # Print progress
         if verbose and iteration % 10 == 0:
-            rel_loss = compute_relative_loss(grad, deg)
+            rel_loss = compute_relative_loss(grad, udeg)
             print(
                 f"Iteration {iteration:4d}, Loss: {loss:.6f}, Rel Loss: {rel_loss:.6f}"
             )
@@ -249,6 +254,7 @@ def estimate_parameters(
                 print(f"Converged after {iteration + 1} iterations")
             break
 
+    alpha = alpha[ids]
     return {
         "alpha": alpha,
         "losses": np.array(losses),

@@ -62,11 +62,11 @@ def sampling(
     Returns
     -------
     list
-        If flatten=False (default): List containing n_samples separate edge lists. 
+        If flatten=False (default): List containing n_samples separate edge lists.
         Each edge list is a numpy array where:
         - For unweighted networks (UBCM): each row is [source_node, target_node]
         - For weighted networks (UECM): each row is [source_node, target_node, weight]
-        
+
         If flatten=True: Single flattened list of all edges with network ID in last column:
         - For unweighted networks (UBCM): each row is [source_node, target_node, network_id]
         - For weighted networks (UECM): each row is [source_node, target_node, weight, network_id]
@@ -125,20 +125,20 @@ def sampling(
         assert len(alpha) == len(beta), "Alpha and beta must have the same length"
 
         sampler = _uecm_sampler
-        parameters = (alpha, beta, n_samples)
+        parameters = {"alpha": alpha, "beta": beta, "n_samples": n_samples}
     else:
         sampler = _ubcm_sampler
-        parameters = (alpha, n_samples)
+        parameters = {"alpha": alpha, "n_samples": n_samples}
 
     assert n_samples > 0, "Number of samples must be greater than 0"
 
     # Generate all samples in a single call for better performance
-    all_edges = sampler(*parameters)
+    all_edges = sampler(**parameters)
 
     # Return flattened or separated edge lists based on flatten parameter
     if flatten:
         return all_edges
-    
+
     # Return edge lists separated by network ID (original behavior)
     edge_list = []
     for sample_id in range(n_samples):
@@ -157,8 +157,8 @@ def sampling(
 ########################################################################
 ######################### Unweighted case below ########################
 ########################################################################
-@jit(nopython=True, nogil=True, fastmath=True, cache=True, parallel=True)
-def _ubcm_sampler(alpha, n_samples=1):
+@jit(nopython=True, nogil=True, fastmath=True)
+def _ubcm_sampler(alpha, n_samples):
     """
     This function extends the application of Miller and Hagberg (MH) algorithm 2011
     to generate multiple undirected unweighted configuration model (UBCM) networks.
@@ -214,7 +214,7 @@ def _ubcm_sampler(alpha, n_samples=1):
 ########################################################################
 
 
-@jit(nopython=True, nogil=True, fastmath=True, cache=True)
+@jit(nopython=True, nogil=True, fastmath=True)
 def _find_min_two_beta_sum(beta_sorted, permutation_beta, mask):
     """
     Find the sum of the two smallest beta values among unprocessed nodes.
@@ -251,8 +251,8 @@ def _find_min_two_beta_sum(beta_sorted, permutation_beta, mask):
     return retval
 
 
-@jit(nopython=True, nogil=True, fastmath=True, cache=True, parallel=True)
-def _uecm_sampler(alpha, beta, n_samples=1):
+@jit(nopython=True, nogil=True, fastmath=True, cache=True)
+def _uecm_sampler(alpha, beta, n_samples):
     """
     Implements a rejection sampling algorithm for the Undirected Enhanced
     Configuration Model (UECM) to generate multiple weighted networks.
@@ -291,10 +291,14 @@ def _uecm_sampler(alpha, beta, n_samples=1):
         for _i in range(n_nodes):
             i = permutation_alpha_beta[_i]
 
-            min_beta_sum = _find_min_two_beta_sum(beta_sorted, permutation_beta, mask_beta)
+            min_beta_sum = _find_min_two_beta_sum(
+                beta_sorted, permutation_beta, mask_beta
+            )
 
             q = np.exp(-alpha[i] - alpha[i] - beta[i] - beta[i]) / (
-                1 - np.exp(-min_beta_sum) + np.exp(-alpha[i] - alpha[i] - beta[i] - beta[i])
+                1
+                - np.exp(-min_beta_sum)
+                + np.exp(-alpha[i] - alpha[i] - beta[i] - beta[i])
             )
 
             q_clipped = max(min(q, 1 - eps), eps)
